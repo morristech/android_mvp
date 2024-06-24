@@ -1,31 +1,51 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
-    ext.kotlin_version = '1.3.21'
+    ext.kotlin_version = '1.5.31'
 
     repositories {
+        mavenCentral()
         mavenLocal()
         google()
-        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.1'
+        classpath 'com.android.tools.build:gradle:4.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
     repositories {
+        mavenCentral()
         mavenLocal()
         google()
-        jcenter()
-        maven {
-            url  "https://dl.bintray.com/nerdscorrner/MVPLib"
-        }
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots"
-        }
     }
+}
+
+ext {
+    groupId = "com.github.marcherdiego.mvp"
+
+    mvpLibraryArtifactName = "events"
+    mvpLibraryVersion = "2.0.0"
+
+    coroutinesArtifactName = "coroutines"
+    coroutinesLibraryVersion = "1.3.3"
+
+    //Dependencies
+    eventBusVersion = "3.3.1"
+    androidxAppcompatVersion = "1.4.0"
+    androidxLifecycleExtensionsVersion = "2.2.0"
+    jetbrainsCoroutinesVersion = '1.5.2-native-mt'
+
+    //Testing dependencies
+    junitVersion = "4.13.2"
+    androidxTestJunitVersion = "1.1.2"
+    mockitoVersion = "3.11.2"
+    robolectricVersion = "4.5.1"
+    androidxFragmentTestingVersion = "1.3.6"
+
+    //Test App dependencies
+    retrofitVersion = "2.9.0"
+    httpLoggingInterceptorVersion = "4.9.0"
+    androidxConstraintLayoutVersion = "2.1.1"
 }
 
 task clean(type: Delete) {

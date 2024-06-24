@@ -12,10 +12,7 @@ import com.nerdscorner.mvplib.events.bus.Bus
 import org.greenrobot.eventbus.ThreadMode
 import java.lang.ref.WeakReference
 
-abstract class BaseFragmentView @JvmOverloads constructor(
-        fragment: Fragment,
-        @JvmField protected var bus: Bus = Bus.defaultBus
-) : BaseView() {
+abstract class BaseFragmentView @JvmOverloads constructor(fragment: Fragment, bus: Bus = Bus.defaultBus) : BaseView(bus) {
 
     private var fragmentRef: WeakReference<Fragment> = WeakReference(fragment)
 
@@ -38,34 +35,67 @@ abstract class BaseFragmentView @JvmOverloads constructor(
         return fragmentRef.get()?.activity
     }
 
-    @JvmName("busSetter")
+    @JvmName("setBusValue")
     fun setBus(bus: Bus) {
         this.bus = bus
     }
 
-    fun onClick(@IdRes id: Int, event: Any, threadMode: ThreadMode = ThreadMode.POSTING) {
-        fragment?.view?.findViewById<View>(id)?.setOnClickListener {
-            bus.post(event, threadMode)
+    fun onClick(@IdRes viewId: Int, block: (View) -> Unit = {}) {
+        fragment?.view?.findViewById<View>(viewId)?.setOnClickListener {
+            block(it)
         }
     }
 
-    override fun withFragmentManager(block: FragmentManager.() -> Unit) {
-        childFragmentManager?.run {
+    fun onClick(@IdRes viewId: Int, event: Any, threadMode: ThreadMode = ThreadMode.POSTING, block: (View) -> Unit = {}) {
+        onClick(viewId) {
+            bus.post(event, threadMode)
+            block(it)
+        }
+    }
+
+    fun onClick(@IdRes vararg ids: Int, block: (View) -> Unit = {}) {
+        ids.forEach {
+            onClick(it) { v ->
+                block(v)
+            }
+        }
+    }
+
+    fun <T: View> onClickView(@IdRes vararg ids: Int, block: (T) -> Unit) {
+        ids.forEach {
+            onClick(it) { v ->
+                block(v as T)
+            }
+        }
+    }
+
+    fun onClick(@IdRes vararg ids: Int, event: Any, threadMode: ThreadMode = ThreadMode.POSTING, block: (View) -> Unit = {}) {
+        ids.forEach {
+            onClick(it) { v ->
+                bus.post(event, threadMode)
+                block(v)
+            }
+        }
+    }
+
+    override fun withFragmentManager(block: FragmentManager.() -> Unit): Unit? {
+        return childFragmentManager?.run {
             block(this)
         }
     }
 
-    override fun <T : Fragment> findFragmentByTag(tag: String) = childFragmentManager?.findFragmentByTag(tag) as? T
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Fragment> findFragmentByTag(tag: String?) = childFragmentManager?.findFragmentByTag(tag) as? T
 
-    override fun existsFragmentWithTag(tag: String) = findFragmentByTag<Fragment>(tag) != null
+    override fun existsFragmentWithTag(tag: String?) = findFragmentByTag<Fragment>(tag) != null
 
-    override fun <T : Fragment> withFragmentByTag(tag: String, block: (fragment: T, fragmentManager: FragmentManager) -> Unit) {
-        findFragmentByTag<T>(tag)?.run {
-            block(this, childFragmentManager ?: return)
+    override fun <T : Fragment> withFragmentByTag(tag: String?, block: T.(fragmentManager: FragmentManager) -> Unit): Unit? {
+        return findFragmentByTag<T>(tag)?.run {
+            block(this, childFragmentManager)
         }
     }
 
-    override fun withFragmentTransaction(block: FragmentTransaction.() -> Unit) {
-        block(childFragmentManager?.beginTransaction() ?: return)
+    override fun withFragmentTransaction(block: FragmentTransaction.() -> Unit): Unit? {
+        return block(childFragmentManager?.beginTransaction() ?: return null)
     }
 }
