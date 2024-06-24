@@ -1,31 +1,57 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
-    ext.kotlin_version = '1.4.10'
+    ext.kotlin_version = '1.7.20'
 
     repositories {
+        mavenCentral()
         mavenLocal()
         google()
-        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath 'com.android.tools.build:gradle:4.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
     repositories {
+        mavenCentral()
         mavenLocal()
         google()
-        jcenter()
-        maven {
-            url "https://dl.bintray.com/nerdscorrner/MVPLib"
-        }
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots"
-        }
     }
+}
+
+ext {
+    groupId = "com.github.marcherdiego.mvp"
+
+    mvpLibraryArtifactName = "events"
+    mvpLibraryVersion = "3.0.0"
+
+    coroutinesArtifactName = "coroutines"
+    coroutinesLibraryVersion = "2.0.0"
+
+    //Dependencies
+    compileSdkVersion = 33
+    buildToolsVersion = "33.0.0"
+
+    minSdkVersion = 15
+    targetSdkVersion = 33
+
+    eventBusVersion = "3.3.1"
+    androidxAppcompatVersion = "1.6.1"
+    androidxLifecycleExtensionsVersion = "2.2.0"
+    jetbrainsCoroutinesVersion = '1.6.4'
+
+    //Testing dependencies
+    junitVersion = "4.13.2"
+    androidxTestJunitVersion = "1.1.2"
+    mockitoVersion = "3.11.2"
+    robolectricVersion = "4.5.1"
+    androidxFragmentTestingVersion = "1.5.5"
+
+    //Test App dependencies
+    retrofitVersion = "2.9.0"
+    httpLoggingInterceptorVersion = "4.9.0"
+    androidxConstraintLayoutVersion = "2.1.4"
 }
 
 task clean(type: Delete) {

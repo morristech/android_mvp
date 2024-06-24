@@ -1,17 +1,28 @@
+[![Nerd's Corner](https://circleci.com/gh/marcherdiego/android_mvp.svg?style=svg)](https://app.circleci.com/pipelines/github/marcherdiego/android_mvp)
+
 # Android MVP
 
-This is a small lib (less than 70KB) that will help you through your Android features development in order to keep things simple, clear and tidy.
+**Events** [ ![Download](https://img.shields.io/maven-central/v/com.github.marcherdiego.mvp/events) ](https://search.maven.org/artifact/com.github.marcherdiego.mvp/events)
+
+**Coroutines** [ ![Download](https://img.shields.io/maven-central/v/com.github.marcherdiego.mvp/coroutines) ](https://search.maven.org/artifact/com.github.marcherdiego.mvp/coroutines)
+
+This is a small library (less than 96KB) that will help you through your Android features development in order to keep things simple, clear and tidy.
 
 Please refer to [this article](https://android.jlelse.eu/android-mvp-doing-it-right-dac9d5d72079) to get a more in-depth explanation about how this library and its components work.
 
-## Setup
-[ ![Download](https://api.bintray.com/packages/nerdscorrner/MVPLib/Events/images/download.svg) ](https://bintray.com/nerdscorrner/MVPLib/Events/_latestVersion)
+Setup
+=======
+Add `implementation` or `api` (library projects) dependency
 
 ```groovy
-implementation "com.nerdscorner.mvp:events:LATEST_VERSION" 
+implementation "com.github.marcherdiego.mvp:events:LATEST_VERSION" 
+
+// Optional if you want to use coroutines for model operations
+implementation "com.github.marcherdiego.mvp:coroutines:LATEST_VERSION" 
 ```
 
-## Usage
+Usage
+=======
 There are three different options to integrate this MVP library to your application, either extending a BaseActivity/BaseFragment that handles all the wiring and setup automagically **(recommended)**, having a reference to the presenter within your Activity/Fragment, or using behaviours.
 For the three of them, the model, view and presenter behave the same so the only difference is in the activity/fragment
 
@@ -34,14 +45,14 @@ class FeatureActivity : BaseActivity<FeaturePresenter>() {
 
 #### Fragment
 ```kotlin
-// Extending BaseActivity will automatically register and unregister the presenter to the bus whenever your activity get resumed or paused
+// Extending BaseFragment will automatically register and unregister the presenter to the bus whenever your activity get resumed or paused
 class FeatureFragment : BaseFragment<FeaturePresenter>() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_example, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         presenter = FeaturePresenter(
                 FeatureView(this),
@@ -54,7 +65,6 @@ class FeatureFragment : BaseFragment<FeaturePresenter>() {
 ### Holding a presenter reference (without inheritance)
 #### Activity
 ```kotlin
-// Extending BaseActivity will automatically register and unregister the presenter to the bus whenever your activity get resumed or paused
 class FeatureActivity : AppCompatActivity() {
     private lateinit var presenter: FeaturePresenter
     private var bus = Bus.newInstance
@@ -84,7 +94,6 @@ class FeatureActivity : AppCompatActivity() {
 
 #### Fragment
 ```kotlin
-// Extending BaseActivity will automatically register and unregister the presenter to the bus whenever your activity get resumed or paused
 class FeatureFragment : Fragment() {
     private lateinit var presenter: FeaturePresenter
     private var bus = Bus.newInstance
@@ -93,8 +102,8 @@ class FeatureFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_example, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         presenter = FeaturePresenter(
                 FeatureView(this, bus),
@@ -176,7 +185,7 @@ class FeatureView(activity: AppCompatActivity) : BaseActivityView(activity) {
 ```
 #### Model
 ```kotlin
-import com.nerdscorner.mvplib.events.model.BaseEventsModel
+import com.github.marcherdiego.mvp.events.model.BaseEventsModel
 
 class FeatureModel : BaseEventsModel() {
     fun doSomethingInBackground() {
@@ -191,13 +200,63 @@ class FeatureModel : BaseEventsModel() {
 }
 ```
 
-## Contributing
+## Coroutines example
+```kotlin
+import com.github.marcherdiego.mvp.coroutines.extensions.launch
+
+class FeatureModel : BaseEventsModel() {
+    private var fetchJob: Job? = null
+
+    fun doSomethingInBackground() {
+        fetchJob = launch(
+            resultFunc = someSuspendFunctionHere(),
+            success = { // this: SuspendFunctionReturnType
+                bus.post(BackgroundTaskCompletedEvent(this))
+            },
+            fail = { // this: Exception
+                bus.post(BackgroundTaskFailedEvent(this.message))
+            },
+            cancelled = { // Called when executing fetchJob?.cancel()
+                Log.e("InheritanceMainModel", "Job cancelled :(")
+            }
+        )
+    }
+
+    fun cancelJob() {
+        fetchJob?.cancel()
+    }
+
+    class BackgroundTaskCompletedEvent(val pageHtml: String?)
+    class BackgroundTaskFailedEvent(val message: String?)
+}
+```
+
+Contributing
+=======
 
 Please fork this repository and contribute back using [pull requests](https://github.com/marcherdiego/android_mvp/pulls).
 
 Any contributions, large or small, major features, bug fixes, unit tests are welcomed and appreciated but will be thoroughly reviewed and discussed.
 
+License
+=======
 
-## Author
+    Copyright 2023 Diego Marcher.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+
+Author
+=======
 
 Diego Marcher | diego@marcher.com.uy
